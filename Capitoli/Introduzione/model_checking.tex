@@ -1,0 +1,107 @@
+\section{Introduzione al model checking}
+Il model checking è una tecnica finalizzata a dimostrare che un determinato
+sistema, sia esso software o hardware, soddisfi determinate proprietà di
+comportamento.
+La pratica comune consiste nel modellare tale sistema con un linguaggio 
+formale, ad esempio le reti di Petri, e di esprimere, solitamente in
+formule LTL (\emph{Linear Time Temporal Logic}), una serie di 
+proprietà di comportamento che il sistema deve soddisfare per
+potersi definire corretto.
+
+Un software di model checking prende quindi come input una rappresentazione
+formale del sistema, o una sua conversione in un sistema di transizione,
+ed una formula logica che esprime una certa proprietà.
+Il software ritorna, nel caso in cui la formula non sia soddisfatta dal 
+sistema, una \emph{traccia}, ossia un esempio di una possibile 
+evoluzione del sistema in cui la formula non assume valore di verità.
+
+\subsection{Introduzione a LTL}
+
+\subsection{Il model checker Selt}
+Selt è un software di model checking facente parte del pacchetto TINA,
+(\emph{TIme petri Nets Analyzer}), un insieme di programmi per la
+rappresentazione e l'analisi delle reti di Petri temporizzate.
+
+Il paradigma di lavoro per l'utilizzo di Selt è il seguente: 
+Si utilizza l'editor grafico Nd (\emph{NetDraw}) per disegnare una rete di
+Petri, la si converte in un sistema di transizione usando \emph{Sift},
+il quale restituisce un file binario in formato \texttt{.ktz}.
+Selt prende in input il file generato e una formula LTL, 
+nella quale compaiono come variabili proposizionali i nomi 
+dei posti presenti nella rete. Selt provvede a verificare che
+la formula passata in input sia soddisfatta per ogni possibile evoluzione
+del sistema.
+
+La figura \ref{fig:mutex} mostra una semplice rete di Petri che
+modella una scenario in cui due processi si contendono l'accesso 
+alla risorsa $P_1$.
+I due processi in questione sono $\{P_0, t_0, P_3, t_1\}$ e 
+$\{P_2, t_2, P_4, t_3\}$, in cui i posti $P_3$ e $P_4$ rappresentano le 
+sezioni critiche.
+Siamo interessati a verificare che l'accesso alla risorsa $P_1$ avvenga
+in modo mutuamente esclusivo, 
+per fare ciò codifichiamo la proprietà di mutua esclusione in una formula
+LTL: $G \lnot (P_3 \land P_4)$ e la forniamo in input a Selt insieme al
+sistema di transizione relativo alla rete.
+Selt fornisce in output \texttt{TRUE} e il tempo impiegato per la verifica
+della formula, che in questo caso risulta essere \texttt{0.001s}.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \node[place,
+            minimum size=0.7cm,
+            tokens=1,
+            label={above:$P_1$}
+            ] (p1) at (0,0) {};
+        \node[place,
+            minimum size=0.7cm,
+            tokens=1,
+            label={above:$P_0$}
+            ] (p0) at (-2.5,0) {};
+        \node[place,
+            minimum size=0.7cm,
+            tokens=1,
+            label={above:$P_2$}
+            ] (p2) at (2.5,0) {};
+        \node[transition,
+            minimum size=0.7cm,
+            label={right:$t_0$}
+            ] (t0) at (-2.5,-2) {};
+        \node[transition,
+            minimum size=0.7cm,
+            label={right:$t_2$}
+            ] (t2) at (2.5,-2) {};
+        \node[place,
+            minimum size=0.7cm,
+            label={45:$P_3$}
+            ] (p3) at (-2.5,-4) {};
+        \node[place,
+            minimum size=0.7cm,
+            label={45:$P_4$}
+            ] (p4) at (2.5,-4) {};
+        \node[transition,
+            minimum size=0.7cm,
+            label={right:$t_1$}
+            ] (t1) at (-2.5,-6) {};
+        \node[transition,
+            minimum size=0.7cm,
+            label={right:$t_3$}
+            ] (t3) at (2.5,-6) {};
+        \draw[thick] 
+        (p0) edge[post] (t0)
+        (t0) edge[post] (p3)
+        (p3) edge[post] (t1)
+        (p2) edge[post] (t2)
+        (t2) edge[post] (p4)
+        (p4) edge[post] (t3)
+        (p1) edge[post] (t0)
+        (t1) edge[post] (p1)
+        (t3) edge[post] (p1)
+        (p1) edge[post] (t2)
+        (t1) edge[post, bend left=40] (p0)
+        (t3) edge[post, bend right=40] (p2);
+    \end{tikzpicture}
+    \caption{Accesso mutuamente esclusivo ad una risorsa condivisa}
+    \label{fig:mutex}
+\end{figure}

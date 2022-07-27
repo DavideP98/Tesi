@@ -1,0 +1,483 @@
+\section{Introduzione alle reti di Petri}
+
+Le reti di Petri sono una \emph{struttura matematica} ampiamente utilizzata 
+per la modellazione dei sistemi distribuiti. Costituiscono un linguaggio
+formale per rappresentare sistemi di processi concorrenti in cui
+possono verificarsi conflitti, sincronizzazioni e scambi di messaggi.
+Essendo una struttura definita in modo rigoroso, l'analisi del comportamento
+dei sistemi modellati con reti di Petri può essere condotta avvalendosi di
+strumenti matematici, al fine di verificare che il sistema goda di certe
+proprietà.
+
+\begin{definition}
+\normalfont
+Una rete di Petri è definita tramite una tripla $ N = (P, T, F) $ dove 
+$P$ è l'insieme dei \emph{posti}, $T$ l'insieme delle \emph{transizioni}
+e $F$ la relazione di \emph{flusso}, definita in questo modo: 
+$F \subseteq (P \times T) \cup (T \times P) $.
+\end{definition}
+
+Dato che $P$ e $T$ sono insiemi disgiunti e che $F$ definisce solo archi dai
+posti alle transizioni e viceversa, si può concludere che una rete di Petri
+costituisce un grafo bipartito $G = (P \cup T , F) $.
+
+\begin{definition}
+\normalfont
+Ciascun elemento $x \in P \, \cup \, T$ ha \emph{pre-elementi} e \emph{post-elementi}, 
+denotati rispettivamente da $\leftidx{^\bullet}{x}{}$ e $x^{\bullet}$, così
+definiti: 
+$$ \leftidx{^\bullet}{x}{} = \{ y \in P \cup T : (y, x) \in F \},\quad
+x^{\bullet} = \{ y \in P \cup T : (x, y) \in F \}$$
+
+Ad esempio, nella rete mostrata nella figura \ref{fig:petri_1} vale che 
+$\leftidx{^\bullet}{t_1}{} = \{P_2\}$, e $t_1^{\bullet} = \{P_1, P_3\}$.
+\end{definition}
+
+% Illustrazione rete di Petri
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \node[place,
+            minimum size=0.7cm,
+            label={below:$P_1$}
+            ] (p1) at (0,0) {};
+        \node[transition,
+            minimum size=0.6cm,
+            label={45:$t_1$}
+            ] (t1) at (-3,0) {};
+        \node[place,
+            minimum size=0.6cm,
+            label={above:$P_2$}
+            ] (p2) at (-4.5,1.5) {};
+        \node[place,
+            minimum size=0.6cm,
+            label={below:$P_3$}
+            ] (p3) at (-4.5,-1.5) {};
+        \node[transition,
+            minimum size=0.6cm,
+            label={135:$t_2$}
+            ] (t2) at (-6,0) {};
+        \node[transition,
+            minimum size=0.6cm,
+            label={135:$t_3$}
+            ] (t3) at (3,0) {};
+        \node[place,
+            minimum size=0.6cm,
+            label={above:$P_4$}
+            ] (p4) at (4.5,1.5) {};
+        \node[place,
+            minimum size=0.6cm,
+            label={below:$P_5$}
+            ] (p5) at (4.5,-1.5) {};
+        \node[transition,
+            minimum size=0.6cm,
+            label={45:$t_4$}
+            ] (t4) at (6,0) {};
+        \draw[thick] 
+        (t1) edge[post] (p1)
+        (p2) edge[post, bend left=40] (t1)
+        (t1) edge[post, bend left=40] (p3)
+        (p3) edge[post, bend left=40] (t2)
+        (t2) edge[post, bend left=40] (p2)
+        (p1) edge[post] (t3)
+        (p4) edge[post, bend right=40] (t3)
+        (t4) edge[post, bend right=40] (p4)
+        (p5) edge[post, bend right=40] (t4)
+        (t3) edge[post, bend right=40] (p5);
+    \end{tikzpicture}
+    \caption{Esempio di rappresentazione grafica di una rete di Petri: i posti sono denotati da cerchi, le transizioni da quadrati}
+    \label{fig:petri_1}
+\end{figure}
+
+E' possibile associare ad una rete una marcatura, ossia una funzione
+\mbox{$m : P \to \mathbb{N}$}, ottenendo così un \emph{sistema}
+$\Sigma = (N; m_0)$, dove $m_0$ viene
+definita \emph{marcatura iniziale}.
+Una marcatura costituisce lo stato globale del sistema, che evolve per mezzo dell'esecuzione, o \emph{scatto}, delle proprie transizioni.
+Una transizione può scattare solo se essa è abilitata nella marcatura in
+cui il sistema si trova.
+
+\begin{definition}
+\normalfont
+Una transizione $t$ è \emph{abilitata} nella marcatura $m$, (denotato $m[t>$)
+$\iff \forall p \in \leftidx{^\bullet}{t}{}, m(p) > 0$.
+
+Lo scatto di una transizione comporta la generazione di una nuova marcatura $m'$,
+denotato $m[t {\,>\,} m'$, dove $m'$ è esprimibile in funzione di $m$:
+
+$$
+m'(p) = \begin{cases}m(p) - 1 & se \; p \in \leftidx{^\bullet}{t}{}
+\land p \notin t^{\bullet}\\
+m(p) + 1 & se\; p \in t^{\bullet} 
+\land p \notin \leftidx{^\bullet}{t}\\m(p) & altrimenti\end{cases}
+$$
+
+\end{definition}
+
+\begin{definition}
+\normalfont
+Dato $U \subseteq T $ e una marcatura $m$, si definisce $U$ un insieme di transizioni \emph{indipendenti} $\iff$
+$$
+\forall t_1, t_2 \in U: t_1 \neq t_2 \implies
+(\leftidx{^\bullet}{t_1}{} \cup t_1^{\bullet}) \cap 
+(\leftidx{^\bullet}{t_2}{} \cup t_2^{\bullet})
+$$
+
+Si può inoltre definire $U$ come un insieme di transizioni 
+\emph{concorrenti} $\iff$
+$$ U \textrm{ è un insieme di transizioni indipendenti} \land \forall t
+    \in U: m[t> 
+$$
+
+Nella figura \ref{fig:sistema_el} si può osservare un esempio di sistema e
+di una sua possibile evoluzione. La marcatura iniziale 
+$
+m_0 =
+\begin{bmatrix}
+1 \, 1 \, 0 \, 0 \, 0
+\end{bmatrix}^T
+$
+è rappresentata graficamente da dei pallini inseriti all'interno dei posti.
+Si può notare che $a$ e $b$ sono transizioni concorrenti, è infatti
+possibile che esse scattino in un unico passo di computazione:
+$ 
+\begin{bmatrix}
+1 \, 1 \, 0 \, 0 \, 0
+\end{bmatrix}^T
+[\,\{a,b\}>
+\begin{bmatrix}
+0 \, 0 \, 1 \, 1 \, 0
+\end{bmatrix}^T
+$.
+\end{definition}
+
+\begin{figure}[H]
+    \centering
+    
+    \subfigure[]{
+        \label{subfig:a}
+        \begin{tikzpicture}
+        \node[transition,
+            minimum size=0.5cm,
+            label={above:$c$}
+            ] (c) at (-6, 0) {};
+        \node[place,
+            minimum size=0.5cm,
+            tokens=1,
+            label={above:$1$}
+            ] (1) at (-7.5,1) {};
+        \node[place,
+            minimum size=0.5cm,
+            tokens=1,
+            label={above:$2$}
+            ] (2) at (-4.5,1) {};
+        \node[transition,
+            minimum size=0.5cm,
+            label={right:$a$}
+            ] (a) at (-7.5,0) {};
+        \node[transition,
+            minimum size=0.5cm,
+            label={right:$b$}
+            ] (b) at (-4.5,0) {};
+        \node[transition,
+            minimum size=0.5cm,
+            label={above:$d$}
+            ] (d) at (-6,-2.5) {};
+        \node[place,
+            minimum size=0.5cm,
+            label={left:$5$}
+            ] (5) at (-6,-3.5) {};
+        \node[place,
+            minimum size=0.5cm,
+            label={right:$4$}
+            ] (4) at (-4.5,-1) {};
+        \node[place,
+            minimum size=0.5cm,
+            label={right:$3$}
+            ] (3) at (-7.5,-1) {};
+        \draw[thick] 
+        (c) edge[post] (1)
+        (c) edge[post] (2)
+        (4) edge[post] (c)
+        (4) edge[post] (d)
+        (d) edge[post] (5)
+        (3) edge[post] (c)
+        (a) edge[post] (3)
+        (1) edge[post] (a)
+        (2) edge[post] (b)
+        (b) edge[post] (4);
+        \draw (d.180) edge[bend right=260,pre] (1);
+    \end{tikzpicture}
+    }
+    \subfigure[]{
+        \label{subfig:b}
+        \begin{tikzpicture}
+        \node[transition,
+            minimum size=0.5cm,
+            label={above:$c$}
+            ] (c) at (-6, 0) {};
+        \node[place,
+            minimum size=0.5cm,
+            tokens=0,
+            label={above:$1$}
+            ] (1) at (-7.5,1) {};
+        \node[place,
+            minimum size=0.5cm,
+            tokens=1,
+            label={above:$2$}
+            ] (2) at (-4.5,1) {};
+        \node[transition,
+            minimum size=0.5cm,
+            label={right:$a$}
+            ] (a) at (-7.5,0) {};
+        \node[transition,
+            minimum size=0.5cm,
+            label={right:$b$}
+            ] (b) at (-4.5,0) {};
+        \node[transition,
+            minimum size=0.5cm,
+            label={above:$d$}
+            ] (d) at (-6,-2.5) {};
+        \node[place,
+            minimum size=0.5cm,
+            label={left:$5$}
+            ] (5) at (-6,-3.5) {};
+        \node[place,
+            minimum size=0.5cm,
+            label={right:$4$}
+            ] (4) at (-4.5,-1) {};
+        \node[place,
+            minimum size=0.5cm,
+            tokens=1,
+            label={right:$3$}
+            ] (3) at (-7.5,-1) {};
+        \draw[thick] 
+        (c) edge[post] (1)
+        (c) edge[post] (2)
+        (4) edge[post] (c)
+        (4) edge[post] (d)
+        (d) edge[post] (5)
+        (3) edge[post] (c)
+        (a) edge[post] (3)
+        (1) edge[post] (a)
+        (2) edge[post] (b)
+        (b) edge[post] (4);
+        \draw (d.180) edge[bend right=260,pre] (1);
+    \end{tikzpicture}
+    }
+    \subfigure[]{
+        \label{subfig:c}
+        \begin{tikzpicture}
+        \node[transition,
+            minimum size=0.5cm,
+            label={above:$c$}
+            ] (c) at (-6, 0) {};
+        \node[place,
+            minimum size=0.5cm,
+            tokens=0,
+            label={above:$1$}
+            ] (1) at (-7.5,1) {};
+        \node[place,
+            minimum size=0.5cm,
+            tokens=0,
+            label={above:$2$}
+            ] (2) at (-4.5,1) {};
+        \node[transition,
+            minimum size=0.5cm,
+            label={right:$a$}
+            ] (a) at (-7.5,0) {};
+        \node[transition,
+            minimum size=0.5cm,
+            label={right:$b$}
+            ] (b) at (-4.5,0) {};
+        \node[transition,
+            minimum size=0.5cm,
+            label={above:$d$}
+            ] (d) at (-6,-2.5) {};
+        \node[place,
+            minimum size=0.5cm,
+            label={left:$5$}
+            ] (5) at (-6,-3.5) {};
+        \node[place,
+            minimum size=0.5cm,
+            tokens=1,
+            label={right:$4$}
+            ] (4) at (-4.5,-1) {};
+        \node[place,
+            minimum size=0.5cm,
+            tokens=1,
+            label={right:$3$}
+            ] (3) at (-7.5,-1) {};
+        \draw[thick] 
+        (c) edge[post] (1)
+        (c) edge[post] (2)
+        (4) edge[post] (c)
+        (4) edge[post] (d)
+        (d) edge[post] (5)
+        (3) edge[post] (c)
+        (a) edge[post] (3)
+        (1) edge[post] (a)
+        (2) edge[post] (b)
+        (b) edge[post] (4);
+        \draw (d.180) edge[bend right=260,pre] (1);
+    \end{tikzpicture}
+    }
+    \subfigure[]{
+        \label{subfig:d}
+        \begin{tikzpicture}
+        \node[transition,
+            minimum size=0.5cm,
+            label={above:$c$}
+            ] (c) at (-6, 0) {};
+        \node[place,
+            minimum size=0.5cm,
+            tokens=1,
+            label={above:$1$}
+            ] (1) at (-7.5,1) {};
+        \node[place,
+            minimum size=0.5cm,
+            tokens=1,
+            label={above:$2$}
+            ] (2) at (-4.5,1) {};
+        \node[transition,
+            minimum size=0.5cm,
+            label={right:$a$}
+            ] (a) at (-7.5,0) {};
+        \node[transition,
+            minimum size=0.5cm,
+            label={right:$b$}
+            ] (b) at (-4.5,0) {};
+        \node[transition,
+            minimum size=0.5cm,
+            label={above:$d$}
+            ] (d) at (-6,-2.5) {};
+        \node[place,
+            minimum size=0.5cm,
+            label={left:$5$}
+            ] (5) at (-6,-3.5) {};
+        \node[place,
+            minimum size=0.5cm,
+            label={right:$4$}
+            ] (4) at (-4.5,-1) {};
+        \node[place,
+            minimum size=0.5cm,
+            label={right:$3$}
+            ] (3) at (-7.5,-1) {};
+        \draw[thick] 
+        (c) edge[post] (1)
+        (c) edge[post] (2)
+        (4) edge[post] (c)
+        (4) edge[post] (d)
+        (d) edge[post] (5)
+        (3) edge[post] (c)
+        (a) edge[post] (3)
+        (1) edge[post] (a)
+        (2) edge[post] (b)
+        (b) edge[post] (4);
+        \draw (d.180) edge[bend right=260,pre] (1);
+    \end{tikzpicture}
+    }
+    \caption{Esempio di un sistema e di una sua possibile evoluzione}
+    \label{fig:sistema_el}
+\end{figure}
+
+E' possibile ricavare da un sistema il relativo \emph{grafo delle marcature 
+raggiungibili}, un sistema di transizione etichettato in cui i vertici del
+grafo rappresentano uno stato globale del sistema, e gli archi rappresentano
+lo scatto di una o più transizioni.
+\begin{definition}
+\normalfont
+Il grafo delle marcature raggiungibili è definito tramite una quadrupla:
+$$ CG_{\Sigma} = (C_{\Sigma}, U_{\Sigma}, A, s_0)$$
+In cui:\\
+\begin{itemize}
+    \item[] $CG_{\Sigma}$ è l'insieme delle \emph{marcature raggiungibili}
+    dalla marcatura iniziale.
+    \item[] $U_{\Sigma}$ = $\{ U \subseteq E \,|\, \exists \,m, m'
+    \in C_{\Sigma} : m[U>m' \}$ detto l'insieme dei \emph{passi}.
+    \item[] $A$ = $\{ (m, U, m') \,|\, m, m' \in C_{\Sigma} :
+    U \in U_{\Sigma}, \,m[U>m' \}$ costituisce gli archi etichettati del 
+    grafo.
+    \item[] $s_0 = m_0$, la marcatura iniziale.
+\end{itemize}
+
+\end{definition}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \node[] (1_2) at (0,0) {\{1,2\}};
+        \node[] (3_4) at (0,-3) {\{3,4\}}; 
+        \node[] (3_2) at (3,-1.5) {\{3,2\}};
+        \node[] (1_4) at (-3,-1.5) {\{1,4\}};
+        \node[] (5) at (-6,-3) {\{5\}};
+        \node[] (invisibile) at (-1, 1){};
+        \draw[->] (invisibile) -- (1_2) ;
+        \draw (1_2) -- (3_2) node [midway, above=2pt] {a};
+        \draw[->] (3_2) -- (3_4) node [midway, above=2pt] {b} ;
+        \draw[->] (1_4) -- (3_4) node [midway, above=2pt] {a} ;
+        \draw[->] (1_2) -- (3_4) node [midway, right=1pt] {a,b};
+        \draw[->] (1_4) -- (5) node [midway, above=2pt] {d};
+        \draw[->] (1_2) -- (1_4) node [midway, above=2pt] {b};
+    \end{tikzpicture}
+    \caption{Grafo delle marcature raggiungibili relativo al sistema della figura \ref{fig:sistema_el}}
+    \label{fig:grafo_casi}
+\end{figure}
+
+\subsection{Proprietà di comportamento}
+Esistono alcune proprietà di interesse che riassumono gli aspetti salienti
+del comportamento di un sistema, fra queste vi è la \emph{limitatezza},
+l'\emph{assenza di deadlock}, la \emph{vivezza} e la \emph{reversibilità}.
+
+\begin{definition}
+\normalfont
+Un sistema si dice \emph{limitato} $\iff$
+$$\exists n \in \mathbb{N} : \forall p \in P, \forall m \in [m_0> : 
+m(p) \leq n$$
+
+cioè se non esiste un'evoluzione del sistema per cui un numero infinito
+di marche possa accumularsi in un posto.
+\end{definition}
+
+\begin{definition}
+\normalfont
+Un sistema si dice \emph{deadlock-free} se per ciascuna marcatura
+raggiungibile dalla marcatura iniziale, esiste almeno una transizione 
+abilitata in tale marcatura, formalmente:
+$$\forall m\ \in [m_0> \exists t \in T : m[t>$$
+
+Un modo semplice, anche se non ideale, per dimostrare che un sistema sia
+privo di deadlock consiste nel ricavare il grafo delle marcature
+raggiungibili relativo al sistema e di verificare che non vi siano dei nodi
+pozzo. Un nodo privo di archi uscenti rappresenta infatti una marcatura di
+deadlock, come per esempio il nodo $\{ 5\}$ nel grafo della figura 
+\ref{fig:grafo_casi}.
+Questo metodo non è sempre applicabile: alcune reti possono avere un numero
+di marcature raggiungibili infinito, in questi casi si è impossibilitati
+a ricavare il relativo sistema di transizione.
+
+Esistono sistemi che per loro natura devono avere un comportamento ciclico ed
+eseguibile per un periodo di tempo indeterminato, si pensi per esempio ad un
+web server. In questi tipi di sistema la presenza di una situazione 
+di deadlock è indesiderata, e l'utilizzo delle tecniche di verifica
+dei metodi formali possono essere uno strumento utile per fare 
+luce su questi scenari prima della fase implementativa.
+
+Oltre che l'analisi del grafo delle marcature raggiungibili, esistono
+diverse tecniche che permettono di verificare la presenza
+delle proprietà di comportamento. Fra queste vi sono le tecniche basate sull'algebra lineare:
+una rete di Petri è codificabile in una matrice, detta matrice 
+d'\emph{incidenza}, dalla cui analisi è possibile ricavare varie
+informazioni utili sul comportamento dei sistemi basati su tale rete.
+Esistono varie classi di reti di Petri su cui sono formulati dei teoremi 
+che forniscono condizioni necessarie e sufficienti affinchè determinate
+proprietà siano rispettate.
+Lo stabilire l'appartenenza di una rete ad una determinata
+classe rivela di per sé molte informazioni sul suo comportamento.
+
+\end{definition}
+
+
+
+
+
