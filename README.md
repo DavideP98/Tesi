@@ -1,13 +1,13 @@
 # Scaletta della tesi:
 
 Capitolo 1: Introduzione
-	- Obiettivi del progetto di stage
-	- Introduzione alle reti di Petri
-	- Introduzione al Model Checking
-	- Strumenti software per il Model Checking:
-		- Esempi di utilizzo di Selt
+	- Obiettivi del progetto di stage  
+	- Introduzione alle reti di Petri  
+	- Introduzione al Model Checking   
+	- Strumenti software per il Model Checking:  
+		- Esempi di utilizzo di Selt  
 
-Capitolo 2: Spin e ProMeLa
+Capitolo 2: Spin e ProMeLa  
 	- ProMeLa: i costrutti principali
 	- Usare Spin per la verifica dei modelli ProMeLa
 		- verifica di proprietà di safety, liveness e fairness. 
