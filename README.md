@@ -1,6 +1,6 @@
 # Scaletta della tesi:
 
-Capitolo 1: Introduzione
+Capitolo 1: Introduzione  
 	- Obiettivi del progetto di stage  
 	- Introduzione alle reti di Petri  
 	- Introduzione al Model Checking   
